@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="G2POWER 일정">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>G2POWER 현장 일정 캘린더</title>
+
+    <!-- 홈 화면 앱 아이콘 (SVG 인라인 데이터 URI) -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%23ffffff'/%3E%3Cpath d='M18 46 C48 30, 78 34, 102 43 C128 52, 148 48, 166 36 C146 55, 120 58, 94 48 C68 38, 42 36, 18 46 Z' fill='%23C8102E'/%3E%3Ctext x='24' y='118' fill='%231D5695' font-family='Arial,sans-serif' font-weight='900' font-style='italic' font-size='44'%3EG2P%3C/text%3E%3Ctext x='28' y='148' fill='%23f59e0b' font-family='sans-serif' font-weight='700' font-size='18'%3E현장 캘린더%3C/text%3E%3C/svg%3E">
+    <link id="pwaManifestLink" rel="manifest" href="">
+
+    <script>
+        // 단일 HTML 파일에서도 안드로이드/크롬 '앱 설치(PWA)'가 동작하도록 Web Manifest 동적 등록
+        (function() {
+            const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="108" fill="#ffffff"/><path d="M52 130 C136 85, 222 96, 290 122 C364 148, 420 136, 472 102 C415 156, 340 165, 266 136 C192 108, 120 102, 52 130 Z" fill="#C8102E"/><text x="68" y="335" fill="#1D5695" font-family="Arial,sans-serif" font-weight="900" font-style="italic" font-size="125">G2P</text><text x="82" y="420" fill="#f59e0b" font-family="sans-serif" font-weight="700" font-size="50">현장 캘린더</text></svg>`;
+            const iconUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconSvg);
+            const manifest = {
+                name: 'G2POWER 현장 일정 캘린더',
+                short_name: 'G2P 캘린더',
+                start_url: location.href,
+                scope: location.origin + location.pathname.replace(/[^/]*$/, ''),
+                display: 'standalone',
+                background_color: '#f1f5f9',
+                theme_color: '#0f172a',
+                icons: [
+                    { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+                    { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+                ]
+            };
+            const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+            const manifestEl = document.getElementById('pwaManifestLink');
+            if (manifestEl) manifestEl.href = URL.createObjectURL(blob);
+        })();
+    </script>
+
+    <style>
+        /* 사내 보안망 및 모바일 환경 최적화 내장 스타일시트 */
+        *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e2e8f0; -webkit-tap-highlight-color: transparent; }
+        html { line-height: 1.5; -webkit-text-size-adjust: 100%; font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; }
+        body {
+            margin: 0;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: calc(88px + env(safe-area-inset-bottom));
+            transition: background-color 0.2s, color 0.2s;
+        }
+        html.dark body { background-color: #09090b; color: #f4f4f5; }
+        html.dark *, html.dark ::before, html.dark ::after { border-color: #27272a; }
+
+        button, input, select, textarea { font-family: inherit; font-size: 16px; color: inherit; margin: 0; padding: 0; }
+        button { background: transparent; cursor: pointer; }
+        svg { display: block; }
+
+        /* 유틸리티 클래스 */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .inline-flex { display: inline-flex; }
+        .grid { display: grid; }
+        .flex-col { flex-direction: column; }
+        .flex-1 { flex: 1 1 0%; }
+        .shrink-0 { flex-shrink: 0; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-cols-7 { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+        .gap-1 { gap: 0.25rem; }
+        .gap-1\.5 { gap: 0.375rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-2\.5 { gap: 0.625rem; }
+        .gap-3 { gap: 0.75rem; }
+        .space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.5rem; }
+        .space-y-2\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.625rem; }
+        .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+        .space-y-3\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.875rem; }
+
+        .sticky { position: sticky; }
+        .fixed { position: fixed; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .inset-0 { inset: 0; }
+        .top-0 { top: 0; }
+        .bottom-0 { bottom: 0; }
+        .left-0 { left: 0; }
+        .right-0 { right: 0; }
+        .z-30 { z-index: 30; }
+        .z-40 { z-index: 40; }
+        .z-50 { z-index: 50; }
+
+        .w-full { width: 100%; }
+        .w-auto { width: auto; }
+        .w-2 { width: 0.5rem; }
+        .w-2\.5 { width: 0.625rem; }
+        .w-4 { width: 1rem; }
+        .w-5 { width: 1.25rem; }
+        .w-6 { width: 1.5rem; }
+        .w-8 { width: 2rem; }
+        .h-1\.5 { height: 0.375rem; }
+        .h-2 { height: 0.5rem; }
+        .h-2\.5 { height: 0.625rem; }
+        .h-4 { height: 1rem; }
+        .h-5 { height: 1.25rem; }
+        .h-6 { height: 1.5rem; }
+        .h-8 { height: 2rem; }
+        .min-w-0 { min-width: 0; }
+        .max-w-lg { max-width: 32rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .flex-wrap { flex-wrap: wrap; }
+        .w-1\.5 { width: 0.375rem; }
+        .p-2 { padding: 0.5rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-3\.5 { padding: 0.875rem; }
+        .p-4 { padding: 1rem; }
+        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-3\.5 { padding-left: 0.875rem; padding-right: 0.875rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-2\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        .pt-3 { padding-top: 0.75rem; }
+        .pb-2 { padding-bottom: 0.5rem; }
+        .mt-0\.5 { margin-top: 0.125rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-1\.5 { margin-bottom: 0.375rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+
+        .text-\[10px\] { font-size: 10px; line-height: 13px; }
+        .text-\[11px\] { font-size: 11px; line-height: 15px; }
+        .text-xs { font-size: 12px; line-height: 16px; }
+        .text-sm { font-size: 14px; line-height: 20px; }
+        .text-base { font-size: 16px; line-height: 22px; }
+        .text-lg { font-size: 18px; line-height: 24px; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .whitespace-nowrap { white-space: nowrap; }
+        .whitespace-pre-wrap { white-space: pre-wrap; }
+
+        .border { border-width: 1px; }
+        .border-t { border-top-width: 1px; }
+        .border-b { border-bottom-width: 1px; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .rounded-2xl { border-radius: 1rem; }
+        .rounded-t-3xl { border-top-left-radius: 1.5rem; border-top-right-radius: 1.5rem; }
+        .rounded-full { border-radius: 9999px; }
+        .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .shadow-lg { box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15); }
+        .overflow-hidden { overflow: hidden; }
+        .overflow-y-auto { overflow-y: auto; }
+        .overflow-x-auto { overflow-x: auto; }
+
+        /* 색상 스타일 */
+        .bg-white { background-color: #ffffff; }
+        .bg-slate-50 { background-color: #f8fafc; }
+        .bg-slate-100 { background-color: #f1f5f9; }
+        .bg-slate-900 { background-color: #0f172a; }
+        .bg-amber-50 { background-color: #fffbeb; }
+        .bg-amber-500 { background-color: #f59e0b; }
+        .bg-amber-600 { background-color: #d97706; }
+        .bg-emerald-50 { background-color: #ecfdf5; }
+        .bg-emerald-500 { background-color: #10b981; }
+        .bg-emerald-600 { background-color: #059669; }
+        .bg-sky-50 { background-color: #f0f9ff; }
+        .bg-sky-500 { background-color: #0ea5e9; }
+        .bg-indigo-500 { background-color: #6366f1; }
+        .bg-purple-50 { background-color: #faf5ff; }
+        .bg-purple-500 { background-color: #a855f7; }
+        .bg-rose-50 { background-color: #fff1f2; }
+        .bg-rose-500 { background-color: #f43f5e; }
+        .bg-rose-600 { background-color: #e11d48; }
+
+        .text-white { color: #ffffff; }
+        .text-slate-400 { color: #94a3b8; }
+        .text-slate-500 { color: #64748b; }
+        .text-slate-600 { color: #475569; }
+        .text-slate-700 { color: #334155; }
+        .text-slate-900 { color: #0f172a; }
+        .text-amber-600 { color: #d97706; }
+        .text-amber-700 { color: #b45309; }
+        .text-emerald-600 { color: #059669; }
+        .text-emerald-700 { color: #047857; }
+        .text-sky-700 { color: #0369a1; }
+        .text-purple-700 { color: #7e22ce; }
+        .text-rose-500 { color: #f43f5e; }
+        .text-rose-600 { color: #e11d48; }
+        .text-blue-500 { color: #3b82f6; }
+
+        .border-slate-200 { border-color: #e2e8f0; }
+        .border-slate-300 { border-color: #cbd5e1; }
+        .border-amber-200 { border-color: #fde68a; }
+        .border-amber-400 { border-color: #fbbf24; }
+        .border-amber-500 { border-color: #f59e0b; }
+        .border-emerald-200 { border-color: #a7f3d0; }
+        .border-sky-200 { border-color: #bae6fd; }
+        .border-purple-200 { border-color: #e9d5ff; }
+        .border-rose-200 { border-color: #fecdd3; }
+
+        /* 다크모드 */
+        html.dark .dark\:bg-zinc-900 { background-color: #18181b; }
+        html.dark .dark\:bg-zinc-950 { background-color: #09090b; }
+        html.dark .dark\:bg-zinc-800 { background-color: #27272a; }
+        html.dark .dark\:bg-amber-950\/50 { background-color: rgba(69, 26, 3, 0.5); }
+        html.dark .dark\:bg-emerald-950\/50 { background-color: rgba(2, 44, 34, 0.5); }
+        html.dark .dark\:bg-sky-950\/50 { background-color: rgba(8, 47, 73, 0.5); }
+        html.dark .dark\:bg-purple-950\/50 { background-color: rgba(59, 7, 100, 0.5); }
+        html.dark .dark\:bg-rose-950\/50 { background-color: rgba(76, 5, 25, 0.5); }
+        html.dark .dark\:text-white { color: #ffffff; }
+        html.dark .dark\:text-zinc-100 { color: #f4f4f5; }
+        html.dark .dark\:text-zinc-300 { color: #d4d4d8; }
+        html.dark .dark\:text-zinc-400 { color: #a1a1aa; }
+        html.dark .dark\:text-amber-300 { color: #fcd34d; }
+        html.dark .dark\:text-amber-400 { color: #fbbf24; }
+        html.dark .dark\:text-emerald-300 { color: #6ee7b7; }
+        html.dark .dark\:text-emerald-400 { color: #34d399; }
+        html.dark .dark\:text-sky-300 { color: #7dd3fc; }
+        html.dark .dark\:text-purple-300 { color: #d8b4fe; }
+        html.dark .dark\:text-rose-400 { color: #fb7185; }
+        html.dark .dark\:border-zinc-800 { border-color: #27272a; }
+        html.dark .dark\:border-zinc-700 { border-color: #3f3f46; }
+        html.dark .dark\:border-amber-800 { border-color: #92400e; }
+        html.dark .dark\:border-emerald-800 { border-color: #065f46; }
+        html.dark .dark\:border-sky-800 { border-color: #075985; }
+
+        /* 모바일 전용 캘린더 셀 & 바텀시트 애니메이션 */
+        .cal-cell {
+            min-height: 54px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            padding: 3px 3px;
+            border-right-width: 1px;
+            border-bottom-width: 1px;
+            transition: background-color 0.15s;
+        }
+        .cal-cell:nth-child(7n) { border-right-width: 0; }
+        .cal-cell.selected {
+            background-color: rgba(245, 158, 11, 0.12);
+            box-shadow: inset 0 0 0 1.5px #f59e0b;
+        }
+        html.dark .cal-cell.selected {
+            background-color: rgba(245, 158, 11, 0.18);
+        }
+
+        .bottom-bar {
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .animate-sheet {
+            animation: slideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+        .animate-ping { animation: ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite; }
+    </style>
+</head>
+<body>
+
+    <!-- 상단 앱 헤더 -->
+    <header class="sticky top-0 z-30 bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 px-3.5 py-2.5 shadow-sm">
+        <div class="max-w-lg mx-auto flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 96" class="h-6 w-auto shrink-0" aria-label="G2power">
+                    <path d="M 4 21 C 55 -2, 105 3, 148 16 C 192 29, 232 23, 272 6 C 232 32, 185 37, 138 22 C 92 7, 48 5, 4 21 Z" fill="#C8102E"/>
+                    <text x="20" y="79" fill="#1D5695" font-family="Arial, sans-serif" font-weight="800" font-style="italic" font-size="64" letter-spacing="-2.5">G2power</text>
+                </svg>
+                <span class="text-base font-bold text-slate-700 dark:text-zinc-200 truncate">현장 캘린더</span>
+            </div>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+                <!-- 실시간 동기화 상태 배지 -->
+                <div id="syncBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-[11px] font-semibold">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span id="syncLabel">동기화 중</span>
+                </div>
+
+                <!-- 다크/라이트 테마 버튼 -->
+                <button type="button" onclick="toggleTheme()" class="p-1.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300" aria-label="테마 변경">
+                    <svg id="iconMoon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                    <svg id="iconSun" class="w-4 h-4 text-amber-400 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="max-w-lg mx-auto px-3 pt-3 space-y-3">
+
+        <!-- 상단 필터 바 (시공업체 필터 + 일정 구분 필터) -->
+        <section class="space-y-2">
+            <div class="grid grid-cols-2 gap-2">
+                <select id="constructionTeamFilter" onchange="onFilterChange()"
+                    class="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-semibold text-slate-700 dark:text-zinc-200 shadow-sm">
+                    <option value="ALL">전체 시공업체</option>
+                </select>
+
+                <select id="categoryFilter" onchange="onFilterChange()"
+                    class="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs font-semibold text-slate-700 dark:text-zinc-200 shadow-sm">
+                    <option value="ALL">전체 일정 (계약·납기·현장)</option>
+                    <option value="EVENT_ONLY">현장 일정만 (미팅·시공·검사)</option>
+                    <option value="CONTRACT_DELIVERY">계약일 · 납기일만</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- 월간 캘린더 카드 -->
+        <section class="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+            <!-- 월 네비게이션 -->
+            <div class="px-3 py-2 border-b border-slate-200 dark:border-zinc-800 space-y-1.5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="changeMonth(-1)" class="p-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200" aria-label="이전 달">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                        <h1 id="monthTitle" class="text-base font-bold text-slate-900 dark:text-white px-1.5 whitespace-nowrap">2026년 11월</h1>
+                        <button type="button" onclick="changeMonth(1)" class="p-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200" aria-label="다음 달">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <button type="button" onclick="goToday()" class="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-bold shrink-0">
+                        오늘
+                    </button>
+                </div>
+
+                <!-- 색상 범례 (갤럭시 S25 360px 폭에서도 1줄로 깔끔하게 표시) -->
+                <div class="flex items-center justify-between px-1 text-[10px] text-slate-500 dark:text-zinc-400">
+                    <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>계약</span>
+                    <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>납기</span>
+                    <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>미팅</span>
+                    <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>시공</span>
+                    <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>검사</span>
+                    <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>기타</span>
+                </div>
+            </div>
+
+            <!-- 요일 헤더 -->
+            <div class="grid grid-cols-7 border-b border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/60 text-center text-[11px] font-bold py-1.5">
+                <div class="text-rose-500">일</div>
+                <div class="text-slate-600 dark:text-zinc-300">월</div>
+                <div class="text-slate-600 dark:text-zinc-300">화</div>
+                <div class="text-slate-600 dark:text-zinc-300">수</div>
+                <div class="text-slate-600 dark:text-zinc-300">목</div>
+                <div class="text-slate-600 dark:text-zinc-300">금</div>
+                <div class="text-blue-500">토</div>
+            </div>
+
+            <!-- 날짜 셀 그리드 -->
+            <div id="calendarGrid" class="grid grid-cols-7"></div>
+        </section>
+
+        <!-- 선택된 날짜 상세 일정 리스트 카드 -->
+        <section class="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+            <div class="px-3.5 py-2.5 border-b border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/40">
+                <div>
+                    <h2 id="selectedDateTitle" class="text-sm font-bold text-slate-900 dark:text-white">2026년 11월 27일 (금)</h2>
+                    <p id="selectedDateSub" class="text-[11px] text-slate-500 dark:text-zinc-400">선택한 날짜의 현장 일정 및 계약·납기 내역</p>
+                </div>
+            </div>
+
+            <div id="selectedDateList" class="p-3 space-y-2"></div>
+        </section>
+
+        <!-- 이번 달 예정 일정 (초·중순·하순·월중) 카드 -->
+        <section class="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+            <div class="px-3.5 py-2.5 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between bg-amber-50 dark:bg-amber-950/50">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                    <h2 id="tentativeTitle" class="text-sm font-bold text-slate-900 dark:text-white">11월 예정 일정 (날짜 미정)</h2>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span id="tentativeCount" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-white dark:bg-zinc-800 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">0건</span>
+                    <button type="button" onclick="openEventSheet(null, null, 'TENTATIVE')"
+                        class="px-2.5 py-1 rounded-lg bg-amber-500 text-white text-[11px] font-bold">
+                        + 예정 추가
+                    </button>
+                </div>
+            </div>
+
+            <div id="tentativeList" class="p-3 space-y-2"></div>
+        </section>
+
+    </main>
+
+    <!-- 하단 고정 원터치 일정 등록 바 -->
+    <div class="fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-zinc-900 border-t border-slate-200 dark:border-zinc-800 px-3.5 pt-2.5 bottom-bar shadow-lg">
+        <div class="max-w-lg mx-auto flex items-center gap-2">
+            <button type="button" onclick="openEventSheet(null, selectedDateStr)"
+                class="flex-1 py-3 px-4 rounded-2xl bg-amber-500 text-white text-sm font-bold flex items-center justify-center gap-2 shadow-sm">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                <span id="bottomActionLabel">선택일 현장 일정 등록</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 모바일 바텀시트: 일정 등록 / 수정 모달 -->
+    <div id="eventSheetModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/60" onclick="closeEventSheet()"></div>
+        <div class="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white dark:bg-zinc-900 rounded-t-3xl border-t border-slate-200 dark:border-zinc-800 shadow-lg animate-sheet max-h-[90vh] overflow-y-auto">
+            <form onsubmit="handleEventSubmit(event)" class="p-4 space-y-3.5">
+                <!-- 상단 핸들 및 타이틀 -->
+                <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-zinc-800">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                        <h3 id="sheetTitle" class="text-base font-bold text-slate-900 dark:text-white">새 현장 일정 등록</h3>
+                    </div>
+                    <button type="button" onclick="closeEventSheet()" class="p-1.5 rounded-lg text-slate-400">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <input type="hidden" id="editEventId">
+                <input type="hidden" id="inputProjectId">
+                <input type="hidden" id="inputScheduleType" value="CONFIRMED">
+
+                <!-- 1. 현장(프로젝트) 검색 및 선택 -->
+                <div class="relative">
+                    <label class="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1">현장명 (프로젝트 검색) <span class="text-rose-500">*</span></label>
+                    <input type="text" id="inputProjectSearch" autocomplete="off" required
+                        placeholder="현장명, 프로젝트 NO., 수요처 검색..."
+                        onfocus="renderProjectDropdown(this.value)"
+                        oninput="onProjectSearchInput(this.value)"
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 text-sm text-slate-900 dark:text-zinc-100">
+                    <div id="projectDropdown" class="hidden mt-1 max-h-44 overflow-y-auto rounded-xl bg-white dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 shadow-lg"></div>
+                </div>
+
+                <!-- 2. 일정 구분 빠른 탭 버튼 (터치 편의성 극대화) -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1">일정 구분 <span class="text-rose-500">*</span></label>
+                    <div class="grid grid-cols-4 gap-1.5" id="categoryChipGroup">
+                        <button type="button" onclick="selectCategoryChip('미팅')" data-cat="미팅" class="cat-chip py-2 rounded-xl border text-xs font-bold bg-amber-500 text-white border-amber-500">미팅</button>
+                        <button type="button" onclick="selectCategoryChip('시공')" data-cat="시공" class="cat-chip py-2 rounded-xl border text-xs font-semibold bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700">시공</button>
+                        <button type="button" onclick="selectCategoryChip('사용전검사')" data-cat="사용전검사" class="cat-chip py-2 rounded-xl border text-xs font-semibold bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700">사용전검사</button>
+                        <button type="button" onclick="selectCategoryChip('기타')" data-cat="기타" class="cat-chip py-2 rounded-xl border text-xs font-semibold bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700">기타</button>
+                    </div>
+                    <input type="hidden" id="inputCategory" value="미팅">
+                </div>
+
+                <!-- 3. 일정 유형 전환 (확정일 / 예정일) -->
+                <div class="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-zinc-800">
+                    <button type="button" id="btnTypeConfirmed" onclick="setScheduleType('CONFIRMED')"
+                        class="py-2 rounded-lg text-xs font-bold bg-white dark:bg-zinc-900 text-emerald-700 dark:text-emerald-400 shadow-sm">
+                        확정 날짜 지정
+                    </button>
+                    <button type="button" id="btnTypeTentative" onclick="setScheduleType('TENTATIVE')"
+                        class="py-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-zinc-400">
+                        예정 (초·중순·하순)
+                    </button>
+                </div>
+
+                <!-- 확정 날짜 입력 필드 -->
+                <div id="confirmedFields" class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1">시작일 <span class="text-rose-500">*</span></label>
+                        <input type="date" id="inputStartDate" required onchange="syncEndDate()"
+                            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1">종료일 <span class="text-rose-500">*</span></label>
+                        <input type="date" id="inputEndDate" required
+                            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm">
+                    </div>
+                </div>
+
+                <!-- 예정 시기 입력 필드 -->
+                <div id="tentativeFields" class="hidden grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1">예정 연·월</label>
+                        <input type="month" id="inputTentativeMonth"
+                            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1">예정 시기</label>
+                        <select id="inputTentativePeriod"
+                            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm">
+                            <option value="초 예정">초 예정</option>
+                            <option value="중순 예정">중순 예정</option>
+                            <option value="하순 예정">하순 예정</option>
+                            <option value="월중 예정">월중 예정</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 4. 세부 일정 내용 & 입회자 -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1">세부 내용</label>
+                        <input type="text" id="inputTitle" placeholder="예: 착공 협의, 자재 반입"
+                            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1">입회자</label>
+                        <input type="text" id="inputObserver" placeholder="예: 김태양"
+                            class="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm">
+                    </div>
+                </div>
+
+                <!-- 5. 현장 메모 -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1">현장 메모 / 특이사항</label>
+                    <textarea id="inputMemo" rows="2" placeholder="방문 시간, 현장 담당자 연락처 등"
+                        class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm"></textarea>
+                </div>
+
+                <!-- 저장 / 삭제 버튼 -->
+                <div class="pt-2 flex items-center gap-2 bottom-bar">
+                    <button type="button" id="btnDeleteEvent" onclick="deleteEvent()"
+                        class="hidden px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 text-sm font-bold">
+                        삭제
+                    </button>
+                    <button type="button" onclick="closeEventSheet()"
+                        class="px-4 py-3 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-sm font-semibold">
+                        취소
+                    </button>
+                    <button type="submit"
+                        class="flex-1 py-3 rounded-xl bg-amber-500 text-white text-sm font-bold shadow-sm">
+                        일정 저장하기
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 토스트 알림 -->
+    <div id="toastBox" class="fixed top-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none"></div>
+
+    <!-- Firebase 실시간 동기화 및 모바일 캘린더 로직 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 기존 PC 웹(4.html)과 100% 동일한 Firebase 설정 및 컬렉션 경로 사용
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'solar-project-tracker-default';
+        const CUSTOM_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyCSm_dVmfGjXQujr9a191j5so2bAh2lfqI",
+            authDomain: "g2power-723e6.firebaseapp.com",
+            projectId: "g2power-723e6",
+            storageBucket: "g2power-723e6.firebasestorage.app",
+            messagingSenderId: "1096405650740",
+            appId: "1:1096405650740:web:c88a1648b282eeb6692961",
+            measurementId: "G-DJYKRK2ZFE"
+        };
+
+        const LOCAL_PROJECTS_KEY = `g2power_projects_${appId}`;
+        const LOCAL_EVENTS_KEY = `g2power_calendar_events_${appId}`;
+
+        let db = null;
+        let isOfflineMode = true;
+        let projectsData = [];
+        let calendarEventsData = [];
+
+        const todayObj = new Date();
+        let viewDate = new Date(todayObj.getFullYear(), todayObj.getMonth(), 1);
+        window.selectedDateStr = formatDateISO(todayObj);
+
+        function getProjectsCollectionRef() {
+            return collection(db, 'artifacts', appId, 'public', 'data', 'solar_projects');
+        }
+
+        function getProjectDocRef(projectId) {
+            return doc(db, 'artifacts', appId, 'public', 'data', 'solar_projects', projectId);
+        }
+
+        function getCalendarEventsCollectionRef() {
+            return collection(db, 'artifacts', appId, 'public', 'data', 'solar_calendar_events');
+        }
+
+        function getCalendarEventDocRef(eventId) {
+            return doc(db, 'artifacts', appId, 'public', 'data', 'solar_calendar_events', eventId);
+        }
+
+        function formatDateISO(d) {
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function saveLocalCache() {
+            try {
+                localStorage.setItem(LOCAL_PROJECTS_KEY, JSON.stringify(projectsData));
+                localStorage.setItem(LOCAL_EVENTS_KEY, JSON.stringify(calendarEventsData));
+            } catch (e) {}
+        }
+
+        function loadLocalCache() {
+            try {
+                const p = localStorage.getItem(LOCAL_PROJECTS_KEY);
+                const ev = localStorage.getItem(LOCAL_EVENTS_KEY);
+                if (p) projectsData = JSON.parse(p) || [];
+                if (ev) calendarEventsData = JSON.parse(ev) || [];
+            } catch (e) {}
+        }
+
+        window.showToast = function(msg, isError = false) {
+            const box = document.getElementById('toastBox');
+            if (!box) return;
+            box.innerHTML = `
+                <div class="px-4 py-2 rounded-full shadow-lg text-xs font-bold whitespace-nowrap ${
+                    isError ? 'bg-rose-600 text-white' : 'bg-slate-900 dark:bg-zinc-800 text-white border border-slate-700'
+                }">${escapeHtml(msg)}</div>
+            `;
+            setTimeout(() => { box.innerHTML = ''; }, 2400);
+        };
+
+        // 테마 전환
+        function applyTheme(isDark) {
+            document.getElementById('iconMoon')?.classList.toggle('hidden', isDark);
+            document.getElementById('iconSun')?.classList.toggle('hidden', !isDark);
+        }
+
+        window.toggleTheme = function() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('g2power-theme', isDark ? 'dark' : 'light');
+            applyTheme(isDark);
+        };
+
+        // 시공업체 필터 옵션 갱신 (마지막 선택값 기억)
+        function updateConstructionTeamOptions() {
+            const sel = document.getElementById('constructionTeamFilter');
+            if (!sel) return;
+            const savedTeam = localStorage.getItem('g2power-mobile-construction-team') || 'ALL';
+            const teams = [...new Set(projectsData.map(p => (p.constructionTeam || '').trim()).filter(Boolean))].sort();
+            sel.innerHTML = `<option value="ALL">전체 시공업체</option>` +
+                teams.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+            if (teams.includes(savedTeam)) {
+                sel.value = savedTeam;
+            }
+        }
+
+        window.onFilterChange = function() {
+            const sel = document.getElementById('constructionTeamFilter');
+            if (sel) localStorage.setItem('g2power-mobile-construction-team', sel.value);
+            renderAll();
+        };
+
+        // 월 이동 및 오늘 버튼
+        window.changeMonth = function(delta) {
+            viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + delta, 1);
+            renderAll();
+        };
+
+        // 달력 영역 좌우 스와이프(터치 슬라이드)로 월 전환
+        function initCalendarSwipe() {
+            const grid = document.getElementById('calendarGrid');
+            if (!grid) return;
+
+            let touchStartX = 0;
+            let touchStartY = 0;
+
+            grid.addEventListener('touchstart', (e) => {
+                if (e.touches.length !== 1) return;
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }, { passive: true });
+
+            grid.addEventListener('touchend', (e) => {
+                if (!touchStartX || e.changedTouches.length !== 1) return;
+                const diffX = e.changedTouches[0].clientX - touchStartX;
+                const diffY = e.changedTouches[0].clientY - touchStartY;
+                touchStartX = 0;
+                touchStartY = 0;
+
+                // 수직 스크롤보다 수평 스와이프가 뚜렷하고 45px 이상 이동한 경우만 전환
+                if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY) * 1.2) {
+                    if (diffX < 0) {
+                        changeMonth(1);  // 왼쪽으로 밀면 다음 달
+                    } else {
+                        changeMonth(-1); // 오른쪽으로 밀면 이전 달
+                    }
+                }
+            }, { passive: true });
+        }
+
+        window.goToday = function() {
+            const now = new Date();
+            viewDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            window.selectedDateStr = formatDateISO(now);
+            renderAll();
+        };
+
+        window.selectDate = function(dateStr) {
+            window.selectedDateStr = dateStr;
+            renderAll();
+        };
+
+        // 필터링된 프로젝트 맵 반환 (시공업체 기준)
+        function getFilteredProjectMap() {
+            const selectedTeam = document.getElementById('constructionTeamFilter')?.value || 'ALL';
+            const map = new Map();
+            projectsData.forEach(p => {
+                if (selectedTeam !== 'ALL' && (p.constructionTeam || '').trim() !== selectedTeam) return;
+                map.set(p.id, p);
+            });
+            return map;
+        }
+
+        // 전체 UI 렌더링
+        function renderAll() {
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+            const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+
+            document.getElementById('monthTitle').textContent = `${year}년 ${month + 1}월`;
+            document.getElementById('tentativeTitle').textContent = `${month + 1}월 예정 일정 (날짜 미정)`;
+
+            const allowedProjects = getFilteredProjectMap();
+            const selectedTeam = document.getElementById('constructionTeamFilter')?.value || 'ALL';
+            const catFilter = document.getElementById('categoryFilter')?.value || 'ALL';
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+            const todayStr = formatDateISO(new Date());
+
+            // 캘린더 그리드 생성
+            const grid = document.getElementById('calendarGrid');
+            let cellsHtml = '';
+
+            for (let i = 0; i < totalCells; i++) {
+                const dayNum = i - firstDay + 1;
+                if (dayNum < 1 || dayNum > daysInMonth) {
+                    cellsHtml += `<div class="cal-cell bg-slate-50 dark:bg-zinc-950"></div>`;
+                    continue;
+                }
+
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+                const dayOfWeek = i % 7;
+                const isToday = dateStr === todayStr;
+                const isSelected = dateStr === window.selectedDateStr;
+
+                let dayTextClass = 'text-slate-800 dark:text-zinc-200';
+                if (dayOfWeek === 0) dayTextClass = 'text-rose-500';
+                else if (dayOfWeek === 6) dayTextClass = 'text-blue-500';
+
+                // 해당 날짜의 계약/납기/현장일정 요약
+                let hasContract = false;
+                let hasDelivery = false;
+                let eventCount = 0;
+                // 해당 날짜의 계약/납기/현장일정 동그라미 목록 수집
+                const dotClasses = [];
+
+                if (catFilter !== 'EVENT_ONLY') {
+                    allowedProjects.forEach(p => {
+                        if (p.contractDate === dateStr) {
+                            dotClasses.push('bg-sky-500');
+                        }
+                        if (p.deliveryDate === dateStr) {
+                            dotClasses.push('bg-amber-500');
+                        }
+                    });
+                }
+
+                if (catFilter !== 'CONTRACT_DELIVERY') {
+                    const eventDotColorMap = {
+                        '미팅': 'bg-indigo-500',
+                        '시공': 'bg-emerald-500',
+                        '사용전검사': 'bg-purple-500',
+                        '기타': 'bg-rose-500'
+                    };
+                    calendarEventsData.forEach(ev => {
+                        if (ev.scheduleType === 'TENTATIVE') return;
+                        if (selectedTeam !== 'ALL' && ev.projectId && !allowedProjects.has(ev.projectId)) return;
+                        const s = ev.startDate || ev.date || '';
+                        const e = ev.endDate || s;
+                        if (s && dateStr >= s && dateStr <= e) {
+                            dotClasses.push(eventDotColorMap[ev.category] || 'bg-rose-500');
+                        }
+                    });
+                }
+
+                const maxDots = 6;
+                const visibleDots = dotClasses.slice(0, maxDots);
+                const extraCount = dotClasses.length - maxDots;
+
+                const dotRows = [];
+                for (let r = 0; r < visibleDots.length; r += 3) {
+                    dotRows.push(visibleDots.slice(r, r + 3));
+                }
+
+                const dotsHtml = dotClasses.length > 0
+                    ? `<div class="flex flex-col items-start gap-1 mt-1 w-full">
+                        ${dotRows.map((row, rowIdx) => `
+                            <div class="flex items-center justify-start gap-0.5">
+                                ${row.map(cls => `<span class="w-1.5 h-1.5 rounded-full shrink-0 ${cls}"></span>`).join('')}
+                                ${rowIdx === dotRows.length - 1 && extraCount > 0 ? `<span class="text-[9px] leading-none font-bold text-slate-600 dark:text-zinc-300">+${extraCount}</span>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>`
+                    : ``;
+
+                cellsHtml += `
+                    <button type="button" onclick="selectDate('${dateStr}')" class="cal-cell ${isSelected ? 'selected' : ''}">
+                        <div class="w-full flex items-center justify-start">
+                            <span class="w-5 h-5 rounded-full inline-flex items-center justify-center text-[11px] font-semibold ${
+                                isToday ? 'bg-amber-500 text-white font-bold' : dayTextClass
+                            }">${dayNum}</span>
+                        </div>
+                        ${dotsHtml}
+                    </button>
+                `;
+            }
+            grid.innerHTML = cellsHtml;
+
+            // 선택된 날짜 상세 일정 리스트 렌더링
+            renderSelectedDateSection(allowedProjects, selectedTeam, catFilter);
+
+            // 이번 달 예정 일정 렌더링
+            renderTentativeSection(monthKey, allowedProjects, selectedTeam);
+        }
+
+        function renderSelectedDateSection(allowedProjects, selectedTeam, catFilter) {
+            const dateStr = window.selectedDateStr;
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const dateObj = new Date(y, m - 1, d);
+            const weekNames = ['일', '월', '화', '수', '목', '금', '토'];
+            const label = `${y}년 ${m}월 ${d}일 (${weekNames[dateObj.getDay()]})`;
+
+            document.getElementById('selectedDateTitle').textContent = label;
+            document.getElementById('bottomActionLabel').textContent = `${m}/${d}(${weekNames[dateObj.getDay()]}) 일정 등록`;
+
+            const listEl = document.getElementById('selectedDateList');
+            const items = [];
+
+            // 1. 확정 현장 일정
+            if (catFilter !== 'CONTRACT_DELIVERY') {
+                calendarEventsData.forEach(ev => {
+                    if (ev.scheduleType === 'TENTATIVE') return;
+                    if (selectedTeam !== 'ALL' && ev.projectId && !allowedProjects.has(ev.projectId)) return;
+                    const s = ev.startDate || ev.date || '';
+                    const e = ev.endDate || s;
+                    if (s && dateStr >= s && dateStr <= e) {
+                        const periodText = s !== e ? `${s} ~ ${e}` : s;
+                        const catColor = {
+                            '미팅': 'bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800',
+                            '시공': 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+                            '사용전검사': 'bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+                            '기타': 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                        }[ev.category || '기타'] || 'bg-emerald-50 text-emerald-700 border-emerald-200';
+
+                        items.push(`
+                            <div onclick="openEventSheet('${escapeHtml(ev.id)}')"
+                                class="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 space-y-1.5">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="px-2 py-0.5 rounded-md text-[11px] font-bold border ${catColor}">${escapeHtml(ev.category || '일정')}</span>
+                                    <span class="text-[11px] text-slate-400 dark:text-zinc-400">${escapeHtml(periodText)}</span>
+                                </div>
+                                <p class="text-sm font-bold text-slate-900 dark:text-white">${escapeHtml(ev.projectName || '-')}</p>
+                                ${ev.title ? `<p class="text-xs font-medium text-slate-700 dark:text-zinc-300">${escapeHtml(ev.title)}</p>` : ''}
+                                ${ev.observer ? `<div class="pt-1 text-[11px] text-slate-500 dark:text-zinc-400"><span>입회자: ${escapeHtml(ev.observer)}</span></div>` : ''}
+                                ${ev.memo ? `<p class="text-[11px] text-slate-500 dark:text-zinc-400 whitespace-pre-wrap pt-1 border-t border-slate-200 dark:border-zinc-700">${escapeHtml(ev.memo)}</p>` : ''}
+                            </div>
+                        `);
+                    }
+                });
+            }
+
+            // 2. 계약일 / 납기일 항목
+            if (catFilter !== 'EVENT_ONLY') {
+                allowedProjects.forEach(p => {
+                    if (p.contractDate === dateStr) {
+                        items.push(`
+                            <div class="p-3 rounded-xl bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800 flex items-center justify-between gap-2">
+                                <div class="min-w-0">
+                                    <span class="text-[11px] font-bold text-sky-700 dark:text-sky-300">[계약일] ${escapeHtml(p.projectNo || '')}</span>
+                                    <p class="text-xs font-bold text-slate-900 dark:text-white truncate">${escapeHtml(p.name)}</p>
+                                </div>
+                                <span class="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 shrink-0">${escapeHtml(p.constructionTeam || p.assignee || '')}</span>
+                            </div>
+                        `);
+                    }
+                    if (p.deliveryDate === dateStr) {
+                        items.push(`
+                            <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 flex items-center justify-between gap-2">
+                                <div class="min-w-0">
+                                    <span class="text-[11px] font-bold text-amber-700 dark:text-amber-300">[납기일] ${escapeHtml(p.projectNo || '')}</span>
+                                    <p class="text-xs font-bold text-slate-900 dark:text-white truncate">${escapeHtml(p.name)}</p>
+                                </div>
+                                <span class="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 shrink-0">${escapeHtml(p.constructionTeam || p.assignee || '')}</span>
+                            </div>
+                        `);
+                    }
+                });
+            }
+
+            if (items.length === 0) {
+                listEl.innerHTML = `<p class="py-6 text-center text-xs text-slate-400 dark:text-zinc-500">등록된 일정이 없습니다. 하단 <strong>일정 등록</strong> 버튼을 눌러 추가하세요.</p>`;
+            } else {
+                listEl.innerHTML = items.join('');
+            }
+        }
+
+        function renderTentativeSection(monthKey, allowedProjects, selectedTeam) {
+            const listEl = document.getElementById('tentativeList');
+            const countEl = document.getElementById('tentativeCount');
+            const periodOrder = { '초 예정': 1, '중순 예정': 2, '하순 예정': 3, '월중 예정': 4 };
+
+            const list = calendarEventsData
+                .filter(ev => {
+                    if (ev.scheduleType !== 'TENTATIVE') return false;
+                    if ((ev.tentativeMonth || '') !== monthKey) return false;
+                    if (selectedTeam !== 'ALL' && ev.projectId && !allowedProjects.has(ev.projectId)) return false;
+                    return true;
+                })
+                .sort((a, b) => (periodOrder[a.tentativePeriod] || 9) - (periodOrder[b.tentativePeriod] || 9));
+
+            countEl.textContent = `${list.length}건`;
+
+            if (list.length === 0) {
+                listEl.innerHTML = `<p class="py-4 text-center text-xs text-slate-400 dark:text-zinc-500">이번 달 예정 일정이 없습니다.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = list.map(ev => `
+                <div onclick="openEventSheet('${escapeHtml(ev.id)}')"
+                    class="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-1.5 mb-0.5">
+                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                ${escapeHtml(ev.tentativePeriod || '월중 예정')}
+                            </span>
+                            <span class="text-[11px] font-semibold text-slate-500 dark:text-zinc-400">${escapeHtml(ev.category || '기타')}</span>
+                        </div>
+                        <p class="text-xs font-bold text-slate-900 dark:text-white truncate">${escapeHtml(ev.projectName || '-')}</p>
+                        ${ev.title ? `<p class="text-[11px] text-slate-500 dark:text-zinc-400 truncate">${escapeHtml(ev.title)}</p>` : ''}
+                    </div>
+                    <span class="text-xs text-slate-400 shrink-0">수정 ›</span>
+                </div>
+            `).join('');
+        }
+
+        // 바텀시트 열기 / 닫기 / 필드 제어
+        window.selectCategoryChip = function(cat) {
+            document.getElementById('inputCategory').value = cat;
+            document.querySelectorAll('.cat-chip').forEach(btn => {
+                const active = btn.getAttribute('data-cat') === cat;
+                btn.className = active
+                    ? 'cat-chip py-2 rounded-xl border text-xs font-bold bg-amber-500 text-white border-amber-500'
+                    : 'cat-chip py-2 rounded-xl border text-xs font-semibold bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700';
+            });
+        };
+
+        window.setScheduleType = function(type) {
+            document.getElementById('inputScheduleType').value = type;
+            const cBtn = document.getElementById('btnTypeConfirmed');
+            const tBtn = document.getElementById('btnTypeTentative');
+            const cFields = document.getElementById('confirmedFields');
+            const tFields = document.getElementById('tentativeFields');
+            const sInput = document.getElementById('inputStartDate');
+            const eInput = document.getElementById('inputEndDate');
+
+            if (type === 'TENTATIVE') {
+                cBtn.className = 'py-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-zinc-400';
+                tBtn.className = 'py-2 rounded-lg text-xs font-bold bg-white dark:bg-zinc-900 text-amber-600 dark:text-amber-400 shadow-sm';
+                cFields.classList.add('hidden');
+                tFields.classList.remove('hidden');
+                sInput.required = false;
+                eInput.required = false;
+            } else {
+                cBtn.className = 'py-2 rounded-lg text-xs font-bold bg-white dark:bg-zinc-900 text-emerald-700 dark:text-emerald-400 shadow-sm';
+                tBtn.className = 'py-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-zinc-400';
+                cFields.classList.remove('hidden');
+                tFields.classList.add('hidden');
+                sInput.required = true;
+                eInput.required = true;
+            }
+        };
+
+        window.syncEndDate = function() {
+            const s = document.getElementById('inputStartDate').value;
+            const e = document.getElementById('inputEndDate');
+            if (s && (!e.value || e.value < s)) {
+                e.value = s;
+            }
+        };
+
+        window.onProjectSearchInput = function(kw) {
+            document.getElementById('inputProjectId').value = '';
+            renderProjectDropdown(kw);
+        };
+
+        window.renderProjectDropdown = function(kw = '') {
+            const box = document.getElementById('projectDropdown');
+            const q = kw.trim().toLowerCase();
+            if (!q) {
+                box.innerHTML = '';
+                box.classList.add('hidden');
+                return;
+            }
+            const matches = projectsData.filter(p => {
+                const hay = `${p.name || ''} ${p.projectNo || ''} ${p.client || ''}`.toLowerCase();
+                return hay.includes(q);
+            });
+
+            if (matches.length === 0) {
+                box.innerHTML = `<div class="p-3 text-xs text-slate-400">일치하는 현장이 없습니다.</div>`;
+            } else {
+                box.innerHTML = matches.map(p => `
+                    <button type="button" onclick="chooseProject('${escapeHtml(p.id)}')"
+                        class="w-full text-left px-3.5 py-2.5 border-b border-slate-200 dark:border-zinc-700 flex items-center justify-between gap-2">
+                        <span class="text-xs font-bold text-slate-800 dark:text-zinc-100 truncate">${escapeHtml(p.name)}</span>
+                        <span class="text-[11px] font-mono text-slate-400 shrink-0">${escapeHtml(p.projectNo || '')}</span>
+                    </button>
+                `).join('');
+            }
+            box.classList.remove('hidden');
+        };
+
+        window.chooseProject = function(projectId) {
+            const proj = projectsData.find(p => p.id === projectId);
+            if (!proj) return;
+            document.getElementById('inputProjectId').value = proj.id;
+            document.getElementById('inputProjectSearch').value = proj.name;
+            document.getElementById('projectDropdown').classList.add('hidden');
+        };
+
+        window.openEventSheet = function(eventId = null, defaultDate = null, defaultType = 'CONFIRMED') {
+            const modal = document.getElementById('eventSheetModal');
+            const deleteBtn = document.getElementById('btnDeleteEvent');
+            const titleEl = document.getElementById('sheetTitle');
+
+            document.getElementById('projectDropdown').classList.add('hidden');
+            document.getElementById('editEventId').value = eventId || '';
+            document.getElementById('inputProjectId').value = '';
+            document.getElementById('inputProjectSearch').value = '';
+            document.getElementById('inputTitle').value = '';
+            document.getElementById('inputMemo').value = '';
+            document.getElementById('inputObserver').value = '';
+
+            const monthStr = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}`;
+            document.getElementById('inputTentativeMonth').value = monthStr;
+            document.getElementById('inputTentativePeriod').value = '초 예정';
+
+            if (eventId) {
+                const ev = calendarEventsData.find(item => item.id === eventId);
+                if (ev) {
+                    titleEl.textContent = '현장 일정 수정';
+                    deleteBtn.classList.remove('hidden');
+                    document.getElementById('inputProjectId').value = ev.projectId || '';
+                    document.getElementById('inputProjectSearch').value = ev.projectName || '';
+                    selectCategoryChip(ev.category || '미팅');
+                    document.getElementById('inputTitle').value = ev.title || '';
+                    document.getElementById('inputObserver').value = ev.observer || '';
+                    document.getElementById('inputMemo').value = ev.memo || '';
+
+                    if (ev.scheduleType === 'TENTATIVE') {
+                        setScheduleType('TENTATIVE');
+                        document.getElementById('inputTentativeMonth').value = ev.tentativeMonth || monthStr;
+                        document.getElementById('inputTentativePeriod').value = ev.tentativePeriod || '초 예정';
+                    } else {
+                        setScheduleType('CONFIRMED');
+                        document.getElementById('inputStartDate').value = ev.startDate || ev.date || window.selectedDateStr;
+                        document.getElementById('inputEndDate').value = ev.endDate || ev.startDate || window.selectedDateStr;
+                    }
+                }
+            } else {
+                titleEl.textContent = '새 현장 일정 등록';
+                deleteBtn.classList.add('hidden');
+                selectCategoryChip('미팅');
+                setScheduleType(defaultType);
+                const d = defaultDate || window.selectedDateStr;
+                document.getElementById('inputStartDate').value = d;
+                document.getElementById('inputEndDate').value = d;
+            }
+
+            modal.classList.remove('hidden');
+        };
+
+        window.closeEventSheet = function() {
+            document.getElementById('eventSheetModal').classList.add('hidden');
+        };
+
+        window.handleEventSubmit = async function(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editEventId').value;
+            let projectId = document.getElementById('inputProjectId').value;
+            const searchName = document.getElementById('inputProjectSearch').value.trim();
+
+            if (!projectId && searchName) {
+                const exact = projectsData.find(p => (p.name || '').toLowerCase() === searchName.toLowerCase());
+                if (exact) projectId = exact.id;
+            }
+
+            if (!projectId) {
+                showToast('검색 목록에서 현장을 선택해 주세요.', true);
+                return;
+            }
+
+            const proj = projectsData.find(p => p.id === projectId);
+            const scheduleType = document.getElementById('inputScheduleType').value;
+            const now = Date.now();
+            const evId = editId || `evt_${now}_${Math.random().toString(36).slice(2, 7)}`;
+
+            const payload = {
+                id: evId,
+                projectId,
+                projectName: proj ? proj.name : searchName,
+                category: document.getElementById('inputCategory').value || '미팅',
+                title: document.getElementById('inputTitle').value.trim(),
+                scheduleType,
+                startDate: scheduleType === 'CONFIRMED' ? document.getElementById('inputStartDate').value : '',
+                endDate: scheduleType === 'CONFIRMED' ? document.getElementById('inputEndDate').value : '',
+                tentativeMonth: scheduleType === 'TENTATIVE' ? document.getElementById('inputTentativeMonth').value : '',
+                tentativePeriod: scheduleType === 'TENTATIVE' ? document.getElementById('inputTentativePeriod').value : '',
+                observer: document.getElementById('inputObserver').value.trim(),
+                memo: document.getElementById('inputMemo').value.trim(),
+                updatedAt: now
+            };
+
+            try {
+                if (isOfflineMode || !db) {
+                    if (editId) {
+                        calendarEventsData = calendarEventsData.map(item => item.id === evId ? payload : item);
+                    } else {
+                        calendarEventsData = [payload, ...calendarEventsData];
+                    }
+                    saveLocalCache();
+                    renderAll();
+                } else {
+                    await setDoc(getCalendarEventDocRef(evId), payload, { merge: true });
+                }
+                closeEventSheet();
+                showToast(editId ? '일정이 수정되었습니다.' : '현장 일정이 등록되었습니다.');
+            } catch (err) {
+                console.error(err);
+                showToast('저장 중 오류가 발생했습니다.', true);
+            }
+        };
+
+        window.deleteEvent = async function() {
+            const editId = document.getElementById('editEventId').value;
+            if (!editId) return;
+            try {
+                if (isOfflineMode || !db) {
+                    calendarEventsData = calendarEventsData.filter(item => item.id !== editId);
+                    saveLocalCache();
+                    renderAll();
+                } else {
+                    await deleteDoc(getCalendarEventDocRef(editId));
+                }
+                closeEventSheet();
+                showToast('일정이 삭제되었습니다.');
+            } catch (err) {
+                console.error(err);
+                showToast('삭제 중 오류가 발생했습니다.', true);
+            }
+        };
+
+        // 초기화 및 Firebase 실시간 연결
+        async function initMobileApp() {
+            const isDark = localStorage.getItem('g2power-theme') === 'dark';
+            if (isDark) document.documentElement.classList.add('dark');
+            applyTheme(isDark);
+
+            initCalendarSwipe();
+            loadLocalCache();
+            updateConstructionTeamOptions();
+            renderAll();
+
+            try {
+                const firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config)
+                    ? JSON.parse(__firebase_config)
+                    : CUSTOM_FIREBASE_CONFIG;
+
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                isOfflineMode = false;
+                document.getElementById('syncLabel').textContent = '실시간 연동';
+
+                onSnapshot(getProjectsCollectionRef(), (snapshot) => {
+                    const list = [];
+                    snapshot.forEach(docSnap => list.push({ id: docSnap.id, ...docSnap.data() }));
+                    projectsData = list;
+                    saveLocalCache();
+                    updateConstructionTeamOptions();
+                    renderAll();
+                });
+
+                onSnapshot(getCalendarEventsCollectionRef(), (snapshot) => {
+                    const evList = [];
+                    snapshot.forEach(docSnap => evList.push({ id: docSnap.id, ...docSnap.data() }));
+                    calendarEventsData = evList;
+                    saveLocalCache();
+                    renderAll();
+                });
+            } catch (err) {
+                console.warn('로컬 모드 동작:', err);
+                isOfflineMode = true;
+                document.getElementById('syncLabel').textContent = '로컬 저장';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', initMobileApp);
+    </script>
+</body>
+</html>
